@@ -40,7 +40,7 @@ public class EnemyController : MonoBehaviour
     void MoveTowardsPlayer()
     {
         //Vector2 direction = (_player.position - transform.position).normalized;
-        transform.position = Vector2.MoveTowards(transform.position, _player.position, moveSpeed * Time.deltaTime);
+        transform.position = Vector2.MoveTowards(transform.position, _player.position, (moveSpeed + Random.Range(-0.2f,0.2f)) * Time.deltaTime);
     }
 
     void AttackPlayer()

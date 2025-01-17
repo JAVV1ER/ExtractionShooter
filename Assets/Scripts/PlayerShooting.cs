@@ -1,6 +1,9 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class PlayerShooting : MonoBehaviour
 {
@@ -11,9 +14,16 @@ public class PlayerShooting : MonoBehaviour
     public LayerMask enemyLayer;
     public float autoAimRange = 10f;
     public Transform weapon;
+    public float rotationSpeed = 100f;
 
     private Transform _targetEnemy;
     private float _nextFireTime = 0f;
+    private Inventory _inventory;
+
+    private void Start()
+    {
+        _inventory = GetComponent<Inventory>();
+    }
 
     void Update()
     {
@@ -23,16 +33,33 @@ public class PlayerShooting : MonoBehaviour
         {
             Vector2 direction = (_targetEnemy.position - transform.position).normalized;
             float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-            weapon.rotation = Quaternion.Euler(0, 0, angle);
+            Quaternion targetRotation = Quaternion.Euler(0, 0, angle);
+            
+            weapon.rotation = Quaternion.RotateTowards(
+                weapon.rotation, 
+                targetRotation, 
+                rotationSpeed * Time.deltaTime
+            );
         }
         else
         {
-            weapon.rotation = Quaternion.Euler(0, 0, 0);
+            //Плавное возвращение в исходное состояние
+            Quaternion defaultRotation = Quaternion.Euler(0, 0, 0);
+            weapon.rotation = Quaternion.RotateTowards(
+                weapon.rotation, 
+                defaultRotation, 
+                rotationSpeed * Time.deltaTime
+            );
         }
         
-        if (Input.GetButton("Fire1") && Time.time >= _nextFireTime)
+        if (Input.GetButton("Fire1") && Time.time >= _nextFireTime && !EventSystem.current.IsPointerOverGameObject())
         {
+            var bulletItem = _inventory.GetItems().OfType<BulletItem>().FirstOrDefault();
+            if (!bulletItem) return;
+            if(bulletItem.Count <= 0) return;
+            
             Shoot();
+            _inventory.UseItem(bulletItem);
             _nextFireTime = Time.time + fireRate;
         }
     }

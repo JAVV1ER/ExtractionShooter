@@ -369,6 +369,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 100
+  deathDrop:
+  - gameObject: {fileID: 6347157312015322670, guid: f06f5227494e7154381ad7d8a03ac117, type: 3}
+    count: 1
+  - gameObject: {fileID: 8799041972511682230, guid: aef8b5034aba3bd449183685afb128c2, type: 3}
+    count: 5
 --- !u!114 &7901563889882112779
 MonoBehaviour:
   m_ObjectHideFlags: 0

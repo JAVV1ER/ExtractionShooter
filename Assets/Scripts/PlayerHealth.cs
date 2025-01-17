@@ -28,6 +28,14 @@ public class PlayerHealth : MonoBehaviour
             Die();
         }
     }
+    public void TakeHeal(int heal)
+    {
+        if(_currentHealth == maxHealth) return;
+        _currentHealth += heal;
+        _healthSlider.value = _currentHealth; 
+        if (_currentHealth > maxHealth) _currentHealth = maxHealth;
+    }
+    
 
     void Die()
     {

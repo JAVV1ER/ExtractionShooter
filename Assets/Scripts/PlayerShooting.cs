@@ -87,7 +87,7 @@ public class PlayerShooting : MonoBehaviour
         
     }
 
-    void Shoot()
+    public void Shoot()
     {
         GameObject bullet = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
         

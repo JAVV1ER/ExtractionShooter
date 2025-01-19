@@ -8,7 +8,6 @@ public class Bullet : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D collision)
     {
-        Debug.Log("Triggered on collision");
         // Проверяем, есть ли у объекта компонент EnemyHealth
         EnemyHealth enemyHealth = collision.GetComponent<EnemyHealth>();
         if (enemyHealth != null)

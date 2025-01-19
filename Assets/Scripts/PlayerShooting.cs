@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using DG.Tweening;
+using UnityEngine.Serialization;
 
 public class PlayerShooting : MonoBehaviour
 {
@@ -13,14 +15,18 @@ public class PlayerShooting : MonoBehaviour
     [SerializeField] private float fireRate = 0.5f;
     [SerializeField] private LayerMask enemyLayer;
     [SerializeField] private float autoAimRange = 10f;
-    [SerializeField] private Transform weapon;
+    [SerializeField] private Transform weaponTransform;
     [SerializeField] private float rotationSpeed = 100f;
     [SerializeField] private SpriteRenderer weaponSpriteRenderer;
+    [SerializeField] private float recoilAmount = 0.1f;
+    [SerializeField] private float recoilDuration = 0.1f;
+    
     
     private Transform _targetEnemy;
     private float _nextFireTime = 0f;
     private Inventory _inventory;
     private Collider2D[] _hits = new Collider2D[10];
+    private float _angleWeapon;
 
     private void Start()
     {
@@ -40,16 +46,16 @@ public class PlayerShooting : MonoBehaviour
         if (_targetEnemy)
         {
             Vector2 direction = (_targetEnemy.position - transform.position).normalized;
-            float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
-            Quaternion targetRotation = Quaternion.Euler(0, 0, angle);
+             _angleWeapon = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
+            Quaternion targetRotation = Quaternion.Euler(0, 0, _angleWeapon);
             
-            weapon.rotation = Quaternion.RotateTowards(
-                weapon.rotation, 
+            weaponTransform.rotation = Quaternion.RotateTowards(
+                weaponTransform.rotation, 
                 targetRotation, 
                 rotationSpeed * Time.deltaTime
             );
             //При повороте зеркалим ствол, чтоб смотрелось
-            if (angle >= 90f || angle <= -90f)
+            if (_angleWeapon >= 90f || _angleWeapon <= -90f)
             {
                 weaponSpriteRenderer.flipY = true;
             }
@@ -62,8 +68,8 @@ public class PlayerShooting : MonoBehaviour
         {
             //Или возвращаем в исходное
             Quaternion defaultRotation = Quaternion.Euler(0, 0, 0);
-            weapon.rotation = Quaternion.RotateTowards(
-                weapon.rotation, 
+            weaponTransform.rotation = Quaternion.RotateTowards(
+                weaponTransform.rotation, 
                 defaultRotation, 
                 rotationSpeed * Time.deltaTime
             );
@@ -105,6 +111,17 @@ public class PlayerShooting : MonoBehaviour
         
         _inventory.UseItem(bulletItem);
         _nextFireTime = Time.time + fireRate;
+        
+        //Анимация отдачи
+        if (_angleWeapon >= 90f || _angleWeapon <= -90f)
+        {
+            weaponTransform.DOLocalMoveX(weaponTransform.localPosition.x + recoilAmount, recoilDuration).SetLoops(2, LoopType.Yoyo).SetEase(Ease.OutQuad);
+        }
+        else
+        {
+            weaponTransform.DOLocalMoveX(weaponTransform.localPosition.x - recoilAmount, recoilDuration).SetLoops(2, LoopType.Yoyo).SetEase(Ease.OutQuad);
+        }
+        
         
         GameObject bullet = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
         Rigidbody2D bulletRb = bullet.GetComponent<Rigidbody2D>();

@@ -11,6 +11,8 @@ public class SpawnEnemy :MonoBehaviour
     private void Start()
     {
         _collider2D = GetComponent<Collider2D>();
+        if(!_collider2D) Debug.LogError("No collider attached");
+
         var bounds = _collider2D.bounds;
         Random random = new Random();
         random.InitState();

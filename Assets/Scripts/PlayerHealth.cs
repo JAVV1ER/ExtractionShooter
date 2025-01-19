@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class PlayerHealth : MonoBehaviour
 {
-    public int maxHealth = 100;  
+    [SerializeField] private int maxHealth = 100;  
     
     private Slider _healthSlider;    
     private int _currentHealth;     
@@ -13,6 +13,8 @@ public class PlayerHealth : MonoBehaviour
     void Start()
     {
         _healthSlider = GetComponentInChildren<Slider>();
+        if(!_healthSlider) Debug.LogError("No HealthSlider attached");
+
         _currentHealth = maxHealth; 
         _healthSlider.maxValue = maxHealth;
         _healthSlider.value = _currentHealth;
@@ -21,19 +23,18 @@ public class PlayerHealth : MonoBehaviour
     public void TakeDamage(int damage)
     {
         _currentHealth -= damage;
-        _healthSlider.value = _currentHealth; 
-
         if (_currentHealth <= 0)
         {
             Die();
         }
+        _healthSlider.value = _currentHealth; 
     }
     public void TakeHeal(int heal)
     {
         if(_currentHealth == maxHealth) return;
         _currentHealth += heal;
-        _healthSlider.value = _currentHealth; 
         if (_currentHealth > maxHealth) _currentHealth = maxHealth;
+        _healthSlider.value = _currentHealth; 
     }
     
 

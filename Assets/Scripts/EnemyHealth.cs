@@ -7,15 +7,19 @@ using Random = UnityEngine.Random;
 
 public class EnemyHealth : MonoBehaviour
 {
-    public int maxHealth = 100;
-    private int _currentHealth;
+    [SerializeField] private int maxHealth = 100;
     [SerializeField] private List<DeathDrop> deathDrop;
+    private int _currentHealth;
+    private Transform _collectableHolder;
     private Slider _healthSlider;
     
     void Start()
     {
+        _collectableHolder = GameObject.FindWithTag("CollectableHolder").transform;
+        if (!_collectableHolder) Debug.LogError("No CollectableHolder");
+        
         _healthSlider = gameObject.GetComponentInChildren<Slider>();
-        if(_healthSlider == null)
+        if(!_healthSlider)
             Debug.LogError("HEALTH SLIDER IS NULL");
         _currentHealth = maxHealth;
         _healthSlider.maxValue = maxHealth;
@@ -39,8 +43,9 @@ public class EnemyHealth : MonoBehaviour
         //Instantiate(deathDrop[Random.Range(0, deathDrop.Count)].gameObject, transform.position, Quaternion.identity);
         
         for (int i = 0; i < deathDrop.Count; i++)
-            for (int j = 0; j < deathDrop[i].count; j++)
-                Instantiate(deathDrop[i].gameObject, transform.position, Quaternion.identity);
+        for (int j = 0; j < deathDrop[i].count; j++)
+            Instantiate(deathDrop[i].gameObject, transform.position + new Vector3(i, 0), Quaternion.identity,
+                _collectableHolder);
         
         
         Destroy(gameObject);

@@ -3,13 +3,14 @@ using UnityEngine;
 
 public class ItemPickup : MonoBehaviour
 { 
-    public Item item;
-    private SpriteRenderer spriteRenderer;
+    [SerializeField] private Item item;
+    private SpriteRenderer _spriteRenderer;
 
     private void Start()
     {
-        spriteRenderer = GetComponent<SpriteRenderer>();
-        spriteRenderer.sprite = item.Icon;
+        _spriteRenderer = GetComponent<SpriteRenderer>();
+        if(!_spriteRenderer) Debug.LogError("No spriteRenderer attached");
+        _spriteRenderer.sprite = item.Icon;
     }
 
     void OnTriggerEnter2D(Collider2D other)

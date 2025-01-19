@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Bullet : MonoBehaviour
 {
-    public int damage = 20; // Урон, который наносит пуля
+    [SerializeField] private int damage = 20; // Урон, который наносит пуля
 
     void OnTriggerEnter2D(Collider2D collision)
     {

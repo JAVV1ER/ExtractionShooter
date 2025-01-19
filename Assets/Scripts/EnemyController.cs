@@ -4,11 +4,11 @@ using UnityEngine;
 
 public class EnemyController : MonoBehaviour
 {
-    public float detectionRange = 10f;
-    public float attackRange = 1.5f;
-    public float moveSpeed = 3f;
-    public int attackDamage = 10;
-    public float attackCooldown = 1f;
+    [SerializeField] private float detectionRange = 10f;
+    [SerializeField] private float attackRange = 1.5f;
+    [SerializeField] private float moveSpeed = 3f;
+    [SerializeField] private int attackDamage = 10;
+    [SerializeField] private float attackCooldown = 1f;
 
     private Transform _player;       
     private float _lastAttackTime = 0f;
@@ -16,6 +16,7 @@ public class EnemyController : MonoBehaviour
     void Start()
     {
         _player = GameObject.FindWithTag("Player").transform;
+        if(!_player) Debug.LogError("Player is null");
     }
 
     void Update()

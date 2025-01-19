@@ -7,29 +7,37 @@ using UnityEngine.EventSystems;
 
 public class PlayerShooting : MonoBehaviour
 {
-    public float bulletSpeed = 10f;
-    public GameObject bulletPrefab;
-    public Transform firePoint;
-    public float fireRate = 0.5f;
-    public LayerMask enemyLayer;
-    public float autoAimRange = 10f;
-    public Transform weapon;
-    public float rotationSpeed = 100f;
-
+    [SerializeField] private float bulletSpeed = 10f;
+    [SerializeField] private GameObject bulletPrefab;
+    [SerializeField] private Transform firePoint;
+    [SerializeField] private float fireRate = 0.5f;
+    [SerializeField] private LayerMask enemyLayer;
+    [SerializeField] private float autoAimRange = 10f;
+    [SerializeField] private Transform weapon;
+    [SerializeField] private float rotationSpeed = 100f;
+    [SerializeField] private SpriteRenderer weaponSpriteRenderer;
+    
     private Transform _targetEnemy;
     private float _nextFireTime = 0f;
     private Inventory _inventory;
+    private Collider2D[] _hits = new Collider2D[10];
 
     private void Start()
     {
         _inventory = GetComponent<Inventory>();
+        if(!_inventory) Debug.LogError("No Inventory found");
     }
 
     void Update()
     {
         FindClosestEnemy();
-        
-        if (_targetEnemy != null)
+        RotateWeapon();
+    }
+
+    void RotateWeapon()
+    {
+        //Поворачиваем пушку к врагу
+        if (_targetEnemy)
         {
             Vector2 direction = (_targetEnemy.position - transform.position).normalized;
             float angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
@@ -40,57 +48,65 @@ public class PlayerShooting : MonoBehaviour
                 targetRotation, 
                 rotationSpeed * Time.deltaTime
             );
+            //При повороте зеркалим ствол, чтоб смотрелось
+            if (angle >= 90f || angle <= -90f)
+            {
+                weaponSpriteRenderer.flipY = true;
+            }
+            else
+            {
+                weaponSpriteRenderer.flipY = false;
+            }
         }
         else
         {
-            //Плавное возвращение в исходное состояние
+            //Или возвращаем в исходное
             Quaternion defaultRotation = Quaternion.Euler(0, 0, 0);
             weapon.rotation = Quaternion.RotateTowards(
                 weapon.rotation, 
                 defaultRotation, 
                 rotationSpeed * Time.deltaTime
             );
-        }
-        
-        if (Input.GetButton("Fire1") && Time.time >= _nextFireTime && !EventSystem.current.IsPointerOverGameObject())
-        {
-            var bulletItem = _inventory.GetItems().OfType<BulletItem>().FirstOrDefault();
-            if (!bulletItem) return;
-            if(bulletItem.Count <= 0) return;
-            
-            Shoot();
-            _inventory.UseItem(bulletItem);
-            _nextFireTime = Time.time + fireRate;
+            weaponSpriteRenderer.flipY = false;
         }
     }
 
     void FindClosestEnemy()
     {
-        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, autoAimRange, enemyLayer);
+        // Используем NonAlloc чтобы не перегружать память (рекомендация Rider)
+        int hitCount = Physics2D.OverlapCircleNonAlloc(transform.position, autoAimRange, _hits, enemyLayer);
 
-        
         float closestDistance = Mathf.Infinity;
         Transform closestEnemy = null;
 
-        foreach (var hit in hits)
+        for (int i = 0; i < hitCount; i++)
         {
+            var hit = _hits[i];
             float distance = Vector2.Distance(transform.position, hit.transform.position);
             if (distance < closestDistance)
             {
                 closestDistance = distance;
                 closestEnemy = hit.transform;
-                //Debug.LogWarning(hit.name + " : " + hit.transform);
             }
         }
 
         _targetEnemy = closestEnemy;
-        
     }
 
     public void Shoot()
     {
-        GameObject bullet = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
+        //var bulletItem = _inventory.GetItems().OfType<BulletItem>().FirstOrDefault();
+        if (!_inventory.TryGetItem<BulletItem>(out var bulletItem))
+        {
+            Debug.LogWarning("No Item found");
+            return;
+        }
+        if(bulletItem.Count <= 0) return;
         
+        _inventory.UseItem(bulletItem);
+        _nextFireTime = Time.time + fireRate;
+        
+        GameObject bullet = Instantiate(bulletPrefab, firePoint.position, firePoint.rotation);
         Rigidbody2D bulletRb = bullet.GetComponent<Rigidbody2D>();
         bulletRb.velocity = firePoint.right * bulletSpeed;
         Destroy(bullet, 2f);

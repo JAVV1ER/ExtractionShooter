@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -12,13 +13,13 @@ public class InventoryUIManager : MonoBehaviour
 
     [SerializeField] private GameObject buttonPrefab; 
     [SerializeField] private GameObject useBtnPrefab;
-    [SerializeField] private GameObject deleteBtnPrefab; 
+    [SerializeField] private GameObject deleteBtnPrefab;
     
 
     public void ToggleInventory()
     {
         _inventory = FindObjectOfType<Inventory>();
-        if (_inventory == null)
+        if (!_inventory)
         {
             Debug.LogError("Inventory is null");
             gameObject.SetActive(false);
@@ -28,11 +29,27 @@ public class InventoryUIManager : MonoBehaviour
         _isItemClicked = true;
         gameObject.SetActive(_isInventoryOpen);
 
+        //обновление инвентаря в реальном времени
         if (_isInventoryOpen)
+        {
             UpdateInventoryUI();
-        
+            _inventory.OnItemAdded += OnItemChange;
+            _inventory.OnItemRemoved += OnItemChange;
+            _inventory.OnItemUsed += OnItemChange;
+        }
+        else
+        {
+            _inventory.OnItemAdded -= OnItemChange;
+            _inventory.OnItemRemoved -= OnItemChange;
+            _inventory.OnItemUsed -= OnItemChange;
+        }
+
     }
 
+    private void OnItemChange(IItem item)
+    {
+        UpdateInventoryUI();
+    }
     private void UpdateInventoryUI()
     {
         // Удаляем старые кнопки

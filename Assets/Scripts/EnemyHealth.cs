@@ -7,11 +7,13 @@ using Random = UnityEngine.Random;
 
 public class EnemyHealth : MonoBehaviour
 {
+    public string Id;
     [SerializeField] private int maxHealth = 100;
     [SerializeField] private List<DeathDrop> deathDrop;
     private int _currentHealth;
     private Transform _collectableHolder;
     private Slider _healthSlider;
+    public event Action<EnemyHealth> OnEnemyDied;
     
     void Start()
     {
@@ -47,7 +49,7 @@ public class EnemyHealth : MonoBehaviour
             Instantiate(deathDrop[i].gameObject, transform.position + new Vector3(i, 0), Quaternion.identity,
                 _collectableHolder);
         
-        
+        OnEnemyDied?.Invoke(this);
         Destroy(gameObject);
     }
     void SetHealth(int currentHealth) => _healthSlider.value = currentHealth;
